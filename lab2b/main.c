@@ -8,13 +8,11 @@
 #include <sys/stat.h>
 
 #define PATH "./fifo_file"
-#define BUFFER_SIZE 80
 
 int main()
 {
 	setlocale(LC_ALL, "Rus");
 	int fifodes;
-	//char *buffer = (char *)calloc(BUFFER_SIZE, sizeof(char));
 	pid_t pid;
 	unlink (PATH);
 	mkfifo(PATH, 0777);
