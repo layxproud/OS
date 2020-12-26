@@ -27,7 +27,7 @@ int main()
 		case 0: // дочерний процесс
 		printf("\n CHILD: Получаю системное время из fifo\n");
 		fifodes = open(PATH, O_RDONLY);
-		if(PATH)
+		if(fifodes)
 		{
 			sleep(5);
 			
