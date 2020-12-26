@@ -25,7 +25,7 @@ int main()
 		exit(1);
 	
 		case 0: // дочерний процесс
-		printf("\n CHILD: Получаю системное время из pipe\n");
+		printf("\n CHILD: Получаю системное время из fifo\n");
 		fifodes = open(PATH, O_RDONLY);
 		if(PATH)
 		{
@@ -44,7 +44,7 @@ int main()
 		}
 		
 		default: // родительский процесс
-		printf("\n PARENT: Помещаю системное время в pipe\n");
+		printf("\n PARENT: Помещаю системное время в fifo\n");
 		fifodes = open(PATH, O_WRONLY);
 		
 		if(fifodes)
