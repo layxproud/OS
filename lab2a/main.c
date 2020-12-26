@@ -9,7 +9,7 @@ int main()
 {
 	setlocale(LC_ALL, "Rus");
 	int pipedes[2];
-	if (pipe(pipedes) < 0) 
+	if (pipe(pipedes) == -1) 
 	{
         perror("pipe");
         exit(1);
