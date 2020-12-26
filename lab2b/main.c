@@ -34,13 +34,13 @@ int main()
 			long int child_buf[2];
 			time_t child_time = time(NULL);
 			
-			read(fifodes, child_buf, sizeof child_buf);	
+			read(fifodes, child_buf, sizeof child_buf);
 			printf("\n CHILD: Время дочернего процесса -- %s", ctime(&child_time));
-            printf(" CHILD: Время родительского процесса -- %s", ctime(&child_buf[0]));
-            printf(" CHILD: Родительский PID: %ld\n", child_buf[1]);
+            		printf(" CHILD: Время родительского процесса -- %s", ctime(&child_buf[0]));
+            		printf(" CHILD: Родительский PID: %ld\n", child_buf[1]);
 
-            close(fifodes);
-            exit(0);
+           		close(fifodes);
+            		exit(0);
 		}
 		
 		default: // родительский процесс
@@ -49,13 +49,13 @@ int main()
 		
 		if(fifodes)
 		{
-		    long int parent_buf[2];
+			long int parent_buf[2];
 			parent_buf[0] = time(NULL);
 			parent_buf[1] = getpid();
 
-            write(fifodes, parent_buf, sizeof parent_buf);
+            		write(fifodes, parent_buf, sizeof parent_buf);
 			
-            close(fifodes);
+            		close(fifodes);
 		}	
 	}
 	return 0;
