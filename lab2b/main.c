@@ -6,6 +6,7 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
 
 #define PATH "./fifo_file"
 
@@ -56,7 +57,13 @@ int main()
 			write(fifodes, parent_buf, sizeof parent_buf);
 			
 			close(fifodes);
-		}	
+		}
+		
+		if (waitpid(pid, 0, 0) == -1) 
+		{
+			perror("waitpid");
+			exit(1);
+		}		
 	}
 	return 0;
 }
