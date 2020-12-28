@@ -8,11 +8,13 @@
 
 int main()
 {
+	setlocale(LC_ALL, "Rus");	
+	
 	char buf[80];
 	const int bufsize = 80;
-	
-	setlocale(LC_ALL, "Rus");
 	int pipedes[2];
+	pid_t pid;
+	pipe(pipedes);
 	
 	if (pipe(pipedes) == -1) 
 	{
@@ -20,8 +22,6 @@ int main()
         exit(1);
     }
 	
-	pid_t pid;
-	pipe(pipedes);
 	switch(pid = fork())
 	{
 		
@@ -53,7 +53,7 @@ int main()
 			parent_buf[0] = time(NULL);
 			parent_buf[1] = getpid();
 			
-			sprintf(buf, " PARENT: Мой PID -- %ld\n Моё время -- %s\n", getpid(), ctime(&parent_time));
+			sprintf(buf, " PARENT: Мой PID -- %d\n Моё время -- %s\n", getpid(), ctime(&parent_time));
 		
 			write(pipedes[1], buf, bufsize);
 			close(pipedes[1]);	
