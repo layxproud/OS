@@ -8,6 +8,9 @@
 
 int main()
 {
+	char buf[80];
+	const int bufsize = 80;
+	
 	setlocale(LC_ALL, "Rus");
 	int pipedes[2];
 	
@@ -33,28 +36,26 @@ int main()
 			time_t child_time = time(NULL);
 			
 			close(pipedes[1]); 	// дочерний процесс закрывает выходную часть pipe
-			read(pipedes[0], child_buf, sizeof child_buf);
-			close(pipedes[0]);
+			read(pipedes[0], buf, bufsize);
 			
 			printf("\n CHILD: Время дочернего процесса -- %s", ctime(&child_time));
 		
-			time_t parent_time = child_buf[0];
-			printf(" CHILD: Получил от родителя следующие данные:\n Время родительского процесса %s\n PID: %ld\n", 
-			ctime(&child_buf[0]), child_buf[1]);
+			printf(" CHILD: Получил от родителя следующие данные:\n%s", buf);
 
-
+			close(pipedes[0]);
 			exit(0);
 		
 		default: 				// родительский процесс
 			close(pipedes[0]); 	// родительский процесс закрывает входную часть pipe
 		
 			long int parent_buf[2];
+			time_t parent_time = time(NULL);
 			parent_buf[0] = time(NULL);
 			parent_buf[1] = getpid();
 			
-			printf(" PARENT: Передаю свой PID (%ld) дочернему процессу\n", getpid());
+			sprintf(buf, " PARENT: Мой PID -- %ld\n Моё время -- %s\n", getpid(), ctime(&parent_time));
 		
-			write(pipedes[1], parent_buf, sizeof parent_buf);
+			write(pipedes[1], buf, bufsize);
 			close(pipedes[1]);	
 			
 			if (waitpid(pid, 0, 0) == -1) 
