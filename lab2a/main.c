@@ -8,8 +8,6 @@
 
 int main()
 {
-	char buf[80];
-	const int bufsize = 80;
 	setlocale(LC_ALL, "Rus");
 	int pipedes[2];
 	
