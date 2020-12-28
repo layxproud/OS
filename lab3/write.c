@@ -1,80 +1,91 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <errno.h>
-#include <unistd.h>
 #include <time.h>
+#include <unistd.h>
+#include <fcntl.h>
 #include <string.h>
-#include <signal.h>
+#include <errno.h>
 #include <locale.h>
-#include <sys/wait.h>
-#include <sys/ipc.h>
 #include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/ipc.h>
 #include <sys/shm.h>
 
-#define PATH "shm_file"
+#define FILE "shm_file"
+#define IPC_ID 1
 
 int shm_id;
 
-void exitFunc(int sig) // функция завершения работы
+void shared_memory_destructor()
 {
-    printf("\nЗавершение работы передатчика\n");
-    struct shmid_ds *buf = 0;
-    shmctl(shm_id, IPC_RMID, buf);
+	
+	if(shmctl(shm_id, IPC_RMID, 0) == -1)
+		printf("\nОшибка во время удаления разделяемой памяти\n");
+	else
+		printf("\nРазделяемая память успешно удалена\n");
+}
 
-    exit(0);
+
+void function_exit()
+{
+	struct shmid_ds shminfo;
+	shmctl(shm_id, IPC_STAT, &shminfo);
+	if(shm_id >= 0 && shminfo.shm_segsz != 0)
+		shared_memory_destructor();
 }
 
 int main(int argc, char* argv[])
 {
 	setlocale(LC_ALL, "RUS");
-	
-    signal(SIGINT, exitFunc);
-	
-    key_t key = ftok(PATH, 1);
-    shm_id = (shmget(key, 32, IPC_CREAT | 0666));
+
+	if(atexit(function_exit))
+	{
+		printf("\nATEXIT ERROR\n");
+	}
+
+	key_t key = ftok(FILE, IPC_ID);
+	shm_id = shmget(key, 32, IPC_CREAT | 0666);
+	if(shm_id == -1)
+	{
+		if(errno == EEXIST)
+		{
+			printf("\nФайл уже существует\n");
+			exit(-1);
+		}
+		else
+		{
+			perror("\nНе могу получить память\n");
+			exit(-1);
+		}
+	}	
+
 	char* shmat_status = shmat(shm_id, NULL, 0);
+	if(shmat_status == (char*)(- 1))
+	{
+		perror("\nНе могу присоединить разделямую память\n");
+		exit(-1);
+	}
 
-    if(shm_id == -1)
-    {
-        printf("Can't create shared memory\n");
-        exit(0);
-    }
-
-    if(shmat_status == (char*)-1)
-    {
-		printf("Shmat err\n");
+	if(strlen(shmat_status) != 0)
+	{
+		printf("\nПриёмник уже запущен\n");
 		exit(0);
 	}
 	
-	if (strlen(shmat_status) != 0)
-    {
-        printf("there is already a sending process\n");
-        exit(0);
-    }
-	
-	if(argc > 1)
-	{
-		if(strcmp(argv[1], "-f") == 0)
-		{
-			 struct shmid_ds *buf = 0;
-			 shmctl(shm_id, IPC_RMID, buf);
-			 exit(0);
-		}
-	}
-
-	printf("if you'd like to clear memory, run ./first with -f flag\n");	
-
-    time_t timer = time(0);
+	time_t timer = time(NULL);
     time_t buft = timer;
-	
-    while(1)
-    {
-        timer = time(0);
-        if (timer != buft)
+
+	while(1)
+	{
+		sleep(2);
+		timer = time(NULL);
+		if (timer != buft)
         {
             buft = timer;
-            sprintf(shmat_status, "time_Producer = %spid_Producer = %d\n", ctime(&timer), getpid());
+            sprintf(shmat_status, "[%d]Передатчик -- %s\n", getpid(), ctime(&timer));
         }
-    }
-    return 0;
+	}
+	
+	return 0;
+
 }
